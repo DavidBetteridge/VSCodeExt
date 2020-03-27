@@ -30,22 +30,31 @@
 				"title": "P2P: Test Hook"
 			}
 		],
-
 		"configuration": {
 			"title": "P2P Application Hooks",
 			"properties": {
-			  "p2p.url": {
-				"type": "string",
-				"default": "https://customer.proactisp2p.com",
-				"description": "The URL of your P2P server"
-			  },
-			  "p2p.username": {
-				"type": "string",
-				"default": "",
-				"description": "Your P2P login ID"
-			  }
+				"p2p.url": {
+					"type": "string",
+					"default": "https://customer.proactisp2p.com",
+					"description": "The URL of your P2P server"
+				},
+				"p2p.username": {
+					"type": "string",
+					"default": "",
+					"description": "Your P2P login ID"
+				},
+				"p2p.company": {
+					"type": "string",
+					"default": "MAIN",
+					"description": "Your P2P company code"
+				},
+				"p2p.database": {
+					"type": "string",
+					"default": "",
+					"description": "Your P2P database name"
+				}
 			}
-		  }
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
@@ -67,5 +76,8 @@
 		"mocha": "^7.0.1",
 		"typescript": "^3.7.5",
 		"vscode-test": "^1.3.0"
+	},
+	"dependencies": {
+		"axios": "^0.19.2"
 	}
 }

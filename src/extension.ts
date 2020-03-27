@@ -1,33 +1,87 @@
 import * as vscode from 'vscode';
 import { getURL, getDocumentNumber, getApplicationHookType } from './basicInputs';
+import axios from 'axios';
 
 export function activate(context: vscode.ExtensionContext) {
 
-	console.log('The PROACTIS P2P Application Hook extension has been successfully loaded');
+	console.log('The Proactis P2P Application Hook extension has been successfully loaded');
 
 	let loadHookCommand = vscode.commands.registerCommand('extension.loadHook', async () => {
 
-		const p2purl = vscode.workspace.getConfiguration('p2p').get("url");
-		if (p2purl === undefined)
+		const url = vscode.workspace.getConfiguration('p2p').get("url");
+		if (url === undefined)
 		{
 			vscode.window.showErrorMessage('Please define p2p.URL in the settings file');
 			return;
 		}
 
-		const p2pusername = vscode.workspace.getConfiguration('p2p').get("username");
-		if (p2pusername === undefined)
+		const username = vscode.workspace.getConfiguration('p2p').get("username");
+		if (username === undefined)
 		{
 			vscode.window.showErrorMessage('Please define p2p.username in the settings file');
 			return;
 		}
 
-		const applicationHookType = await getApplicationHookType();
+		const companyCode = vscode.workspace.getConfiguration('p2p').get("company");
+		if (companyCode === undefined)
+		{
+			vscode.window.showErrorMessage('Please define p2p.company in the settings file');
+			return;
+		}
+
+		const database = vscode.workspace.getConfiguration('p2p').get("database");
+		if (database === undefined)
+		{
+			vscode.window.showErrorMessage('Please define p2p.database in the settings file');
+			return;
+		}
+
+		var tokenResponse = await axios({
+			url: url + "/api/token", 
+			method: "post",
+			data : {
+				"username": username,
+				"password": "a",
+				"databaseTitle": database
+			}
+		});
+		if (tokenResponse.status !== 200)
+		{
+			vscode.window.showErrorMessage('Invalid login');
+			return;
+		}
+
+		const headers = { Authorization: `Bearer ${tokenResponse.data.token}` };
+
+		var applicationHookTypesResponse = await axios({
+			url: url + "/api/applicationHookTypes", 
+			method: "get",
+			headers: headers
+		});
+		if (applicationHookTypesResponse.status !== 200)
+		{
+			vscode.window.showErrorMessage('Call to GET /api/applicationHookTypes failed - ' + applicationHookTypesResponse.statusText);
+			return;
+		}
+		var applicationHookTypes = applicationHookTypesResponse.data;
+
+		const applicationHookType = await getApplicationHookType(applicationHookTypes);
 		if (applicationHookType === undefined) return;
 
-		// Call web api here
+		var applicationHookResponse = await axios({
+			url: `${url}/api/${companyCode}/applicationHooks/${applicationHookType}`, 
+			method: "get",
+			headers: headers
+		});
+		if (applicationHookResponse.status !== 200)
+		{
+			vscode.window.showErrorMessage('Call to GET /api/applicationHookType failed - ' + applicationHookResponse.statusText);
+			return;
+		}
+		var applicationHook = applicationHookResponse.data;
 
 		const options = {
-			content: "Some code",
+			content: applicationHook.script,
 			language: "csharp"
 		}
 		const textDocument = await vscode.workspace.openTextDocument(options);

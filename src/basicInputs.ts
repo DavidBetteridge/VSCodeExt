@@ -1,13 +1,19 @@
 import { window } from 'vscode';
 
 
-export async function getApplicationHookType() {
+export async function getApplicationHookType(applicationHookTypes: { type: string, shortDescription: string }[]) {
 
-	const result = await window.showQuickPick(['Purchase Invoice Export', 'Expense Claim Export', 'Purchase order Validation'], {
+    const headings = applicationHookTypes.map(hook => hook.shortDescription).sort();
+
+	const selectedDescription = await window.showQuickPick(headings, {
 		placeHolder: 'Select the application hook type',
-	});
+    });
+    
+    if (selectedDescription === undefined) return undefined;
 
-	return result;
+    const selectedType = applicationHookTypes.find(hook => hook.shortDescription === selectedDescription)?.type;
+
+	return selectedType;
 }
 
 export async function getURL() {
