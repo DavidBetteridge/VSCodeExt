@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-interface settings {
+export interface settings {
     url : string,
     username : string,
     companyCode : string,
